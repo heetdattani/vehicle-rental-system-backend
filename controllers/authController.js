@@ -16,15 +16,18 @@ exports.registerUser = async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-    const { error } = registerSchema.validate(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ message: "All fields are required", status: "error" });
     }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res
+        .status(400)
+        .json({ message: "User already exists", status: "error" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -43,14 +46,15 @@ exports.registerUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error, status: "error" });
   }
 };
 
 exports.loginUser = async (req, res) => {
-  const { error } = loginSchema.validate(req.body);
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message });
+  if (!req.body.email || !req.body.password) {
+    return res
+      .status(400)
+      .json({ message: "Email and password are required", status: "error" });
   }
 
   const { email, password } = req.body;
@@ -66,9 +70,11 @@ exports.loginUser = async (req, res) => {
         token: generateToken(user._id),
       });
     } else {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res
+        .status(401)
+        .json({ message: "Invalid credentials", status: "error" });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error, status: "error" });
   }
 };

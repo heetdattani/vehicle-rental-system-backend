@@ -5,6 +5,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const socketIO = require("./socket/socket");
 const vehicleRoutes = require("./routes/vehicleRoutes");
+const bookingsRoutes = require("./routes/bookingRoutes");
 
 connectDB();
 
@@ -22,7 +23,7 @@ app.use((req, res, next) => {
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api", vehicleRoutes);
-app.use("/api/bookings", require("./routes/bookingRoutes"));
+app.use("/api/bookings", bookingsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

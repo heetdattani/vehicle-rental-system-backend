@@ -1,4 +1,5 @@
 const Vehicle = require("../models/Vehicle");
+const { vehicleSchema } = require("../validations/vehicleValidation");
 
 // Get all vehicles
 const getAllVehicles = async (req, res) => {
@@ -38,7 +39,7 @@ const getAllVehicles = async (req, res) => {
       vehicles,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error, status: "error" });
   }
 };
 
@@ -46,7 +47,9 @@ const createVehicle = async (req, res) => {
   try {
     const { error } = vehicleSchema.validate(req.body);
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      return res
+        .status(400)
+        .json({ message: error.details[0].message, status: "error" });
     }
 
     const { name, type, rentPerDay, description, image } = req.body;
@@ -59,9 +62,13 @@ const createVehicle = async (req, res) => {
       image,
     });
 
-    res.status(201).json(vehicle);
+    res.status(201).json({
+      vehicle,
+      message: "Vehicle created successfully",
+      status: "success",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error, status: "error" });
   }
 };
 
@@ -69,17 +76,25 @@ const updateVehicle = async (req, res) => {
   try {
     const { error } = vehicleSchema.validate(req.body);
     if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+      return res
+        .status(400)
+        .json({ message: error.details[0].message, status: "error" });
     }
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
-      return res.status(404).json({ message: "Vehicle not found" });
+      return res
+        .status(404)
+        .json({ message: "Vehicle not found", status: "error" });
     }
     Object.assign(vehicle, req.body);
     await vehicle.save();
-    res.json(vehicle);
+    res.json({
+      vehicle,
+      message: "Vehicle updated successfully",
+      status: "success",
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error, status: "error" });
   }
 };
 
@@ -87,12 +102,33 @@ const deleteVehicle = async (req, res) => {
   try {
     const vehicle = await Vehicle.findById(req.params.id);
     if (!vehicle) {
-      return res.status(404).json({ message: "Vehicle not found" });
+      return res
+        .status(404)
+        .json({ message: "Vehicle not found", status: "error" });
     }
     await vehicle.deleteOne();
-    res.json({ message: "Vehicle deleted successfully" });
+    res.json({ message: "Vehicle deleted successfully", status: "success" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: "Server error", error, status: "error" });
+  }
+};
+
+const getVehicleById = async (req, res) => {
+  try {
+    const vehicle = await Vehicle.findById(req.params.id);
+    if (!vehicle) {
+      return res
+        .status(404)
+        .json({ message: "Vehicle not found", status: "error" });
+    } else {
+      res.json({
+        vehicle,
+        message: "Vehicle retrieved successfully",
+        status: "success",
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error, status: "error" });
   }
 };
 
@@ -101,4 +137,5 @@ module.exports = {
   createVehicle,
   updateVehicle,
   deleteVehicle,
+  getVehicleById,
 };
